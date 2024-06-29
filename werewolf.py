@@ -423,7 +423,11 @@ class Game:
     def day(self):
         self.rendering_engine.render_game_statement('Everyone, Wake up!')
 
-        day_prompt = open('prompts/day.txt').read()
+        d_wer_prompt = open('prompts/d_wer.txt').read()
+        d_min_prompt = open('prompts/d_min.txt').read()
+        d_mas_prompt = open('prompts/d_mas.txt').read()
+        d_seer_prompt = open('prompts/day_seer.txt').read()
+        d_vil_prompt = open('prompts/d_vil.txt').read()
 
         pointer = -1
 
@@ -448,7 +452,19 @@ class Game:
 
             self.rendering_engine.render_player_turn_init(player)
 
-            response = player.run_prompt(day_prompt)
+            
+            if player.card == 'Werewolf':
+                response = player.run_prompt(d_wer_prompt)
+            if player.card == 'Minion':
+                response = player.run_prompt(d_min_prompt)  
+            if player.card == 'Mason':                      
+                response = player.run_prompt(d_mas_prompt)
+            if player.card == 'Seer':           
+                response = player.run_prompt(d_seer_prompt)
+            if player.card == 'Villager':
+                response = player.run_prompt(d_vil_prompt)
+
+   
 
             action = return_dict_from_json_or_fix(response, self.use_gpt4)
             reasoning = action['reasoning']
@@ -542,7 +558,8 @@ class Game:
 @click.option('--use-gpt4', is_flag=True, default=False, help='Use GPT-4 for discussion')
 @click.option('--render-markdown', is_flag=True, default=False, help='Render output as markdown')
 def play_game(player_count, discussion_depth, use_gpt4, render_markdown):
-    game = Game(player_count=player_count, discussion_depth=discussion_depth, use_gpt4=use_gpt4, render_markdown=render_markdown)
+    #game = Game(player_count=player_count, discussion_depth=discussion_depth, use_gpt4=use_gpt4, render_markdown=render_markdown)
+    game = Game(player_count=5, discussion_depth=20, use_gpt4=use_gpt4, render_markdown=render_markdown)
     game.play()
 
 if __name__ == '__main__':

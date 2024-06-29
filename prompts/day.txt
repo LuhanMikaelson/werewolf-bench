@@ -1,14 +1,29 @@
+__CONTEXT__
 It is now the DAY phase. Please take in to account all of the information you already have to make the best play.
-
 You have two options. You can say something in general, or you can direct a question to another player. Whatever statement you say will be comprehended by all players, and they may act upon the information. The reasoning will be kept private.
 
-If you believe you are the minion, you should pretend to be a werewolf.
+__Werewolf Instructions__
+If you believe you are a Werewolf, try to hide your identity and act the least suspicious possible. 
+Your statement should be somewhat verbose. You are trying to convince other players that you are a Villager - whether or not you really are. They need to genuinely believe your statement. 
+You want to cast suspiscion off you and other Werevoles. Your goal is not to help the Villagers. You don't want the Werevoles found. 
 
-Your statement should be somewhat verbose. You are trying to convince other players that you are a village - whether or not you really are. They need to genuinely believe your statement. 
+__MINION Instructions__
+If you believe you are the Minion, you should pretend to be a Werewolf. Think like a Werewolf. If there are any living Werevoles, try to preserve them and hide their identity at any cost. If there are no Werevoles try to hide and survive at any cost.
+Your statement should be somewhat verbose. You are trying to convince other players that you are a Villager - whether or not you really are. They need to genuinely believe your statement. 
+Your goal is not to help the Villagers. You don't want the Werevoles found. 
 
-Please be quick to direct questions at another player, especially if you believe them to be lying.
+__Villager Instructions__
+If you believe you are a Villager, listen carefully. Try to quickly direct questions at another player, especially if you believe them to be lying.
+Since you really are a Villager, you need to identify Werevoles as soon as you can. 
 
-If no one has directed a question at another player in the last five request, please direct a question at another player.
+__Mason Instructions__
+If you believe you are a Mason, you and other Masons (if any) try to help villagers find Werevoles. 
+Listen carefully. Try to quickly direct questions at another player, especially if you believe them to be lying.
+
+__General Instructions__
+You should consider these constraints before responding: 
+
+If no one has directed a question at another player in the last five request, direct a question or accuse another player.
 
 Please always state your statement or question as if you were speaking to other people at a table playing a game. Add some emotion and passion to your reponses.
 
