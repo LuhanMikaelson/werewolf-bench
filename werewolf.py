@@ -7,6 +7,7 @@ import click
 import colorama
 import dotenv
 import openai
+import anthropic
 from colorama import Fore, Style
 
 colorama.init()
@@ -14,6 +15,7 @@ colorama.init()
 if os.path.isfile('.env'):
     dotenv.load_dotenv()
     openai.api_key = os.getenv('OPENAI_API_KEY')
+    anthropic.api_key = os.getenv('ANTHROPIC_API_KEY')
 
 def return_dict_from_json_or_fix(message_json, use_gpt4):
     """
@@ -48,7 +50,7 @@ def return_dict_from_json_or_fix(message_json, use_gpt4):
 
     return message_dict
 
-class Player:
+class OpenAI_Player:
 
     def __init__(self, player_name, player_number, other_players, card, card_list, use_gpt4):
         self.player_number = player_number
@@ -75,6 +77,34 @@ class Player:
         model = 'gpt-3.5-turbo' if not self.use_gpt4 else 'gpt-4'
         completion = openai.ChatCompletion.create(model=model, temperature=0.8, messages=[{'role': 'user', 'content': full_prompt}])
         return completion.choices[0].message.content
+
+class Anthropic_Player:
+
+    def __init__(self, player_name, player_number, other_players, card, card_list, use_claude_opus):
+        self.player_number = player_number
+        self.player_name = player_name
+        self.other_players = other_players
+        self.card = card
+        self.card_thought = card
+        self.display_card = card
+        self.rules_prompt_prefix = open('prompts/rules.txt').read().format(player_name = player_name, other_players = '; '.join(other_players), card = card, card_list = card_list)
+        self.memory = []
+        self.use_claude_opus = use_claude_opus
+
+    def append_memory(self, memory_item):
+        self.memory.append(memory_item)
+
+    def run_prompt(self, prompt):
+        full_prompt = self.rules_prompt_prefix
+
+        if len(self.memory) > 0:
+            full_prompt += '\n\nYou have the following memory of interactions in this game: \n\n' + '\n\n'.join(self.memory)
+
+        full_prompt += prompt
+
+        model = 'claude-3-5-sonnet-20240620' if not self.use_claude_opus else 'claude-3-opus-20240229'
+        completion = anthropic.Anthropic().messages.create(model=model, max_tokens=1000, temperature=0.8, messages=[{'role': 'user', 'content': full_prompt}])
+        return completion.content
 
 class ConsoleRenderingEngine:
 
@@ -214,14 +244,18 @@ class MarkdownRenderingEngine:
 
 class Game:
 
-    def __init__(self, player_count, discussion_depth, use_gpt4, render_markdown):
+    def __init__(self, player_count, discussion_depth, player_type, render_markdown, model=None, use_gpt4=False, use_claude_opus=False):
         self.player_count = player_count
         self.discussion_depth = discussion_depth
+        self.player_type = player_type
+        self.use_gpt4 = use_gpt4
+        self.model = model
+        self.use_claude_opus = use_claude_opus
+        self.render_markdown = render_markdown
         self.card_list = None
         self.player_names = []
         self.players = []
         self.middle_cards = []
-        self.use_gpt4 = use_gpt4
 
         if render_markdown:
             self.rendering_engine = MarkdownRenderingEngine()
@@ -262,7 +296,7 @@ class Game:
 
         self.rendering_engine.render_game_details(self.player_count, self.discussion_depth, self.use_gpt4)
 
-    def initialize_game(self):
+    def initialize_game(self,OpenAI_Player=False):
         if self.player_count < 3 or self.player_count > 5:
             raise ValueError('Number of players must be between 3 and 5 inclusive.')
 
@@ -280,7 +314,11 @@ class Game:
         random.shuffle(alloted_cards) 
 
         self.player_names = self.get_player_names(self.player_count)
-        self.players = [Player(name, i, self.get_other_players(i, self.player_names), alloted_cards[i - 1], card_list, self.use_gpt4) for i, name in enumerate(self.player_names, 1)]
+        self.players = [Anthropic_Player(name, i, self.get_other_players(i, self.player_names), alloted_cards[i - 1], card_list, self.use_claude_opus)
+                        if not OpenAI_Player else
+                        OpenAI_Player(name, i, self.get_other_players(i, self.player_names), alloted_cards[i - 1], card_list, self.use_gpt4)
+                        for i, name in enumerate(self.player_names, 1)
+                        ]
         self.middle_cards = alloted_cards[self.player_count:] 
 
     def introduce_players(self):
@@ -555,12 +593,22 @@ class Game:
 @click.command()
 @click.option('--player-count', type=int, default=5, help='Number of players')
 @click.option('--discussion-depth', type=int, default=20, help='Number of discussion rounds')
-@click.option('--use-gpt4', is_flag=True, default=False, help='Use GPT-4 for discussion')
+@click.option('--player-type', type=click.Choice(['Anthropic_Player', 'OpenAI_Player'], case_sensitive=False), default='OpenAI_Player', help='Type of player')
+@click.option('--use-gpt4', is_flag=True, default=False, help='Use GPT-4 for OpenAI Player')
+@click.option('--use-claude-opus', is_flag=True, default=False, help='Use Claude-Opus for Anthropic Player')
 @click.option('--render-markdown', is_flag=True, default=False, help='Render output as markdown')
-def play_game(player_count, discussion_depth, use_gpt4, render_markdown):
+def play_game(player_count, discussion_depth, player_type, use_gpt4, use_claude_opus, render_markdown):
     #game = Game(player_count=player_count, discussion_depth=discussion_depth, use_gpt4=use_gpt4, render_markdown=render_markdown)
-    game = Game(player_count=5, discussion_depth=20, use_gpt4=use_gpt4, render_markdown=render_markdown)
-    game.play()
+    if player_type.lower() == 'openai_player' and use_gpt4:
+        model = 'use_gpt4'
+    elif player_type.lower() == 'anthropic_player' and use_claude_opus:
+        model = 'use_claude_opus'
+    else:
+        model = None  # Default or error handling
 
+    # Assuming Game class initialization can handle these parameters
+    game = Game(player_count=player_count, discussion_depth=discussion_depth, player_type=player_type, model=model, render_markdown=render_markdown)
+    game.play()
+    
 if __name__ == '__main__':
     play_game()
