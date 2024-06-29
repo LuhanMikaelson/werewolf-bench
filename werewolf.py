@@ -30,20 +30,19 @@ def return_dict_from_json_or_fix(message_json, use_gpt4):
     try:
         message_dict = json.loads(message_json)
 
-    except ValueError:
+    except (ValueError, TypeError) as e:
         completion = openai.ChatCompletion.create(model=model, temperature=0.8, messages=[
             {
                 'role': 'user', 
-                'content': 'I have a JSON string, but it is not valid JSON. Possibly, the message contains other text besides just the JSON. Could you make it valid? Or, ' \
-                + 'if there is valid JSON in the response, please just extact the JSON and do NOT update it. Please respond ONLY in valid JSON! Do not comment on your response. Do not start or ' \
-                + 'end with backpacks ("`" or "```")!  You must ONLY respond in JSON! Anything after the colon is JSON I need you to fix. The original message that contains the ' \
-                + f'bad JSON is: \n {message_json}'
+                'content': 'fix the JSON, Return ONLY the fixed JSON. Exclude intro/extro'
+                + f'flawed JSON to fix: \n {message_json}'
             }])
         fixed_json = completion.choices[0].message.content
+
         try:
             message_dict = json.loads(fixed_json)
 
-        except ValueError:
+        except (ValueError, TypeError) as e:
             print('Unable to get valid JSON response from GPT. Exiting program gracefully.')
             print(f'Debug info:\n\tOriginal Response: {message_json}\n\tAttempted Fix: {fixed_json}')
             exit(1)
@@ -607,7 +606,8 @@ def play_game(player_count, discussion_depth, player_type, use_gpt4, use_claude_
         model = None  # Default or error handling
 
     # Assuming Game class initialization can handle these parameters
-    game = Game(player_count=player_count, discussion_depth=discussion_depth, player_type=player_type, model=model, render_markdown=render_markdown)
+    #game = Game(player_count=player_count, discussion_depth=discussion_depth, player_type=player_type, model=model, render_markdown=render_markdown)
+    game = Game(player_count=5, discussion_depth=20, player_type='Anthropic_Player', model=model, render_markdown=render_markdown)
     game.play()
     
 if __name__ == '__main__':
