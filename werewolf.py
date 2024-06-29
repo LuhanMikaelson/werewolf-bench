@@ -243,18 +243,19 @@ class MarkdownRenderingEngine:
 
 class Game:
 
-    def __init__(self, player_count, discussion_depth, player_type, render_markdown, model=None, use_gpt4=False, use_claude_opus=False):
+    def __init__(self, player_count, discussion_depth, render_markdown, use_gpt4=False, use_claude_opus=False, w_flag="OpenAI_Player", s_flag="OpenAI_Player", base_flag="OpenAI_Player"):
         self.player_count = player_count
         self.discussion_depth = discussion_depth
-        self.player_type = player_type
         self.use_gpt4 = use_gpt4
-        self.model = model
         self.use_claude_opus = use_claude_opus
         self.render_markdown = render_markdown
         self.card_list = None
         self.player_names = []
         self.players = []
         self.middle_cards = []
+        self.w_flag = w_flag
+        self.s_flag = s_flag
+        self.base_flag = base_flag
 
         if render_markdown:
             self.rendering_engine = MarkdownRenderingEngine()
@@ -263,7 +264,7 @@ class Game:
 
     def play(self):
 
-        self.initialize_game()
+        self.initialize_game(self.w_flag, self.s_flag, self.base_flag)
         
         self.rendering_engine.render_system_message(open('intro.txt').read().strip(), no_wait=True)
 
@@ -295,7 +296,14 @@ class Game:
 
         self.rendering_engine.render_game_details(self.player_count, self.discussion_depth, self.use_gpt4)
 
-    def initialize_game(self,OpenAI_Player=False):
+    def player_initializer(self, name, number, other_players, card, card_list, flag):
+        if flag == 'Anthropic_Player':
+            print('Anthropic Player Initialized!')
+            return Anthropic_Player(name, number, other_players, card, card_list, self.use_claude_opus)
+        elif flag == 'OpenAI_Player':
+            return OpenAI_Player(name, number, other_players, card, card_list, self.use_gpt4)
+
+    def initialize_game(self, w_flag, s_flag, base_flag):
         if self.player_count < 3 or self.player_count > 5:
             raise ValueError('Number of players must be between 3 and 5 inclusive.')
 
@@ -313,11 +321,19 @@ class Game:
         random.shuffle(alloted_cards) 
 
         self.player_names = self.get_player_names(self.player_count)
-        self.players = [Anthropic_Player(name, i, self.get_other_players(i, self.player_names), alloted_cards[i - 1], card_list, self.use_claude_opus)
-                        if not OpenAI_Player else
-                        OpenAI_Player(name, i, self.get_other_players(i, self.player_names), alloted_cards[i - 1], card_list, self.use_gpt4)
-                        for i, name in enumerate(self.player_names, 1)
-                        ]
+
+        self.players = []
+        for i, name in enumerate(self.player_names, 1):
+            if alloted_cards[i - 1] == 'Werewolf':
+                self.players.append(self.player_initializer(name, i, self.get_other_players(i, self.player_names), alloted_cards[i - 1], card_list, w_flag))
+            
+            elif alloted_cards[i - 1] == 'Seer':
+                self.players.append(self.player_initializer(name, i, self.get_other_players(i, self.player_names), alloted_cards[i - 1], card_list, s_flag))
+
+            else:
+                self.players.append(self.player_initializer(name, i, self.get_other_players(i, self.player_names), alloted_cards[i - 1], card_list, base_flag))
+
+
         self.middle_cards = alloted_cards[self.player_count:] 
 
     def introduce_players(self):
@@ -592,22 +608,19 @@ class Game:
 @click.command()
 @click.option('--player-count', type=int, default=5, help='Number of players')
 @click.option('--discussion-depth', type=int, default=20, help='Number of discussion rounds')
-@click.option('--player-type', type=click.Choice(['Anthropic_Player', 'OpenAI_Player'], case_sensitive=False), default='OpenAI_Player', help='Type of player')
+@click.option('--w-flag', type=click.Choice(['Anthropic_Player', 'OpenAI_Player'], case_sensitive=False), default='OpenAI_Player', help='Type of Werewolf player')
+@click.option('--s-flag', type=click.Choice(['Anthropic_Player', 'OpenAI_Player'], case_sensitive=False), default='OpenAI_Player', help='Type of Seer player')
+@click.option('--base-flag', type=click.Choice(['Anthropic_Player', 'OpenAI_Player'], case_sensitive=False), default='OpenAI_Player', help='Type of other roles player')
 @click.option('--use-gpt4', is_flag=True, default=False, help='Use GPT-4 for OpenAI Player')
-@click.option('--use-claude-opus', is_flag=True, default=False, help='Use Claude-Opus for Anthropic Player')
+@click.option('--use-claude-opus', is_flag=True, default=False, help='Use Claude-Opus for Anthropic_Player')
 @click.option('--render-markdown', is_flag=True, default=False, help='Render output as markdown')
-def play_game(player_count, discussion_depth, player_type, use_gpt4, use_claude_opus, render_markdown):
-    #game = Game(player_count=player_count, discussion_depth=discussion_depth, use_gpt4=use_gpt4, render_markdown=render_markdown)
-    if player_type.lower() == 'openai_player' and use_gpt4:
-        model = 'use_gpt4'
-    elif player_type.lower() == 'anthropic_player' and use_claude_opus:
-        model = 'use_claude_opus'
-    else:
-        model = None  # Default or error handling
+def play_game(player_count, discussion_depth, use_gpt4, use_claude_opus, render_markdown, w_flag, s_flag, base_flag):
+    #game = Game(player_count=player_count, discussion_depth=discussion_depth, use_gpt4=use_gpt4, render_markdown=render_markdown, w_flag=w_flag, s_flag=s_flag, base_flag=base_flag)
+
 
     # Assuming Game class initialization can handle these parameters
-    #game = Game(player_count=player_count, discussion_depth=discussion_depth, player_type=player_type, model=model, render_markdown=render_markdown)
-    game = Game(player_count=5, discussion_depth=20, player_type='Anthropic_Player', model=model, render_markdown=render_markdown)
+    #game = Game(player_count=player_count, discussion_depth=discussion_depth, player_type=player_type, render_markdown=render_markdown)
+    game = Game(player_count=5, discussion_depth=20, render_markdown=render_markdown, w_flag='Anthropic_Player', s_flag='Anthropic_Player', base_flag='Anthropic_Player')
     game.play()
     
 if __name__ == '__main__':
