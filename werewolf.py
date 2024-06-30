@@ -107,6 +107,83 @@ class Anthropic_Player:
         model = 'claude-3-5-sonnet-20240620' if not self.use_claude_opus else 'claude-3-opus-20240229'
         completion = anthropic.Anthropic().messages.create(model=model, max_tokens=1000, temperature=0.8, messages=[{'role': 'user', 'content': full_prompt}])
         return completion.content
+class ConsoleRenderingEngine:
+
+    player_colors = [Fore.YELLOW, Fore.GREEN, Fore.BLUE, Fore.MAGENTA, Fore.CYAN]
+
+    def __init__(self):
+        pass
+
+    def get_player_colored_name(self, player):
+        return f'{self.player_colors[player.player_number - 1]}{Style.BRIGHT}{player.player_name}{Style.RESET_ALL}'
+
+    def type_line(self, text):
+        for char in text:
+            print(char, end='', flush=True)
+            time.sleep(random.uniform(0.005, 0.015))
+        print()
+
+    def render_system_message(self, statement, ref_players=[], ref_cards=[], no_wait=False):
+        print()
+        ref_players_formatted = []
+        for player in ref_players:
+            ref_players_formatted.append(self.get_player_colored_name(player))
+        ref_cards_formatted = []
+        for card in ref_cards:
+            ref_cards_formatted.append(f'{Fore.RED}{Style.BRIGHT}{card}{Style.RESET_ALL}')
+        print(statement.format(ref_players = ref_players_formatted, ref_cards = ref_cards_formatted));
+        if not no_wait:
+            time.sleep(random.uniform(1, 3))
+
+    def render_phase(self, phase):
+        print()
+        print(f'=== The {Fore.RED}{Style.BRIGHT}{phase}{Style.RESET_ALL} phase will now commence. ===')
+
+    def render_game_statement(self, statement):
+        print()
+        print(f'{Fore.WHITE}{Style.BRIGHT}GAME{Style.RESET_ALL}: ', end='')
+        self.type_line(statement)
+        time.sleep(random.uniform(1, 3))
+        
+    def render_player_turn_init(self, player):
+        print()
+        player_colored_name = self.get_player_colored_name(player)
+        print(f'{player_colored_name} (thoughts as {player.card_thought}): ', end='', flush=True)
+
+    def render_player_turn(self, player, statement, reasoning):
+        player_colored_name = self.get_player_colored_name(player)
+        self.type_line(reasoning)
+        time.sleep(random.uniform(1, 3))
+        if statement is not None:
+            print(f'{player_colored_name}: ', end='')
+            self.type_line(statement)
+
+    def render_player_vote(self, player, voted_player, reasoning):
+        player_colored_name = self.get_player_colored_name(player)
+        self.type_line(reasoning)
+        time.sleep(random.uniform(1, 3))
+        print(f'{player_colored_name} [{player.display_card}]: ', end='')
+        self.type_line(f'I am voting for {voted_player}.')
+
+    def render_vote_results(self, votes, players):
+        print()
+        print('The votes were:')
+        print()
+        for player in players:
+            if votes[player.player_name] > 0:
+                print(f'{player.player_name} : {player.card} : {votes[player.player_name]}')
+
+    def render_game_details(self, player_count, discussion_depth, use_gpt4):
+        model = 'gpt-3.5-turbo' if not use_gpt4 else 'gpt-4'
+
+        print()
+        print('## Run Details')
+        print()
+        print(f'* Model: {model}')
+        print(f'* Player Count: {player_count}')
+        print(f'* Discussion Depth: {discussion_depth}')
+        print()
+
 
 class MarkdownRenderingEngine:
     def __init__(self):
@@ -168,7 +245,7 @@ class MarkdownRenderingEngine:
             f.write(message + '\n')
 
     def render_game_details(self, player_count, discussion_depth, use_gpt4):
-        model = 'gpt-3.5-turbo' if not use_gpt4 else 'gpt-4o'
+        model = 'gpt-4o'#'claude-3-5-sonnet' 
         message = f'## Run Details\n\n* Model: {model}\n* Player Count: {player_count}\n* Discussion Depth: {discussion_depth}\n'
         print(message)
         with open(self.file_name, 'a') as f:
@@ -233,8 +310,8 @@ class Game:
 
     def player_initializer(self, name, number, other_players, card, card_list, flag):
         if flag == 'Anthropic_Player':
-            print('Anthropic Player Initialized!')
             return Anthropic_Player(name, number, other_players, card, card_list, self.use_claude_opus)
+        
         elif flag == 'OpenAI_Player':
             return OpenAI_Player(name, number, other_players, card, card_list, self.use_gpt4)
 
@@ -526,23 +603,22 @@ class Game:
 
             if len(players_with_max_votes) > 1:
                 game_result = f'There was a tie between {", ".join([player.player_name for player in players_with_max_votes])}.'
-                self.experiment_results.loc[len(self.experiment_results)] = {'player_count': self.player_count, 'discussion_depth': self.discussion_depth, 'use_gpt4': self.use_gpt4, 'use_claude_opus': self.use_claude_opus, 'render_markdown': self.render_markdown, 'w_flag': self.w_flag, 's_flag': self.s_flag, 'base_flag': self.base_flag, 'win': 0, 'loss': 0, 'tie': 1}
                 if players_with_max_votes[0].card != 'Werewolf' and players_with_max_votes[1].card != 'Werewolf':
                     game_result += ' The werewolves win.'
-                    self.experiment_results.loc[len(self.experiment_results)] = {'player_count': self.player_count, 'discussion_depth': self.discussion_depth, 'use_gpt4': self.use_gpt4, 'use_claude_opus': self.use_claude_opus, 'render_markdown': self.render_markdown, 'w_flag': self.w_flag, 's_flag': self.s_flag, 'base_flag': self.base_flag, 'win': 1, 'loss': 0, 'tie': 0}
+                    self.experiment_results.loc[len(self.experiment_results)] = {'player_count': self.player_count, 'discussion_depth': self.discussion_depth, 'use_gpt4': self.use_gpt4, 'use_claude_opus': self.use_claude_opus, 'render_markdown': self.render_markdown, 'w_flag': self.w_flag, 's_flag': self.s_flag, 'base_flag': self.base_flag, 'win': 1, 'loss': 0}
                 else:
                     game_result += ' The villagers win.'
-                    self.experiment_results.loc[len(self.experiment_results)] = {'player_count': self.player_count, 'discussion_depth': self.discussion_depth, 'use_gpt4': self.use_gpt4, 'use_claude_opus': self.use_claude_opus, 'render_markdown': self.render_markdown, 'w_flag': self.w_flag, 's_flag': self.s_flag, 'base_flag': self.base_flag, 'win': 0, 'loss': 1, 'tie': 0}
+                    self.experiment_results.loc[len(self.experiment_results)] = {'player_count': self.player_count, 'discussion_depth': self.discussion_depth, 'use_gpt4': self.use_gpt4, 'use_claude_opus': self.use_claude_opus, 'render_markdown': self.render_markdown, 'w_flag': self.w_flag, 's_flag': self.s_flag, 'base_flag': self.base_flag, 'win': 0, 'loss': 1}
             else:
                 killed_player = players_with_max_votes[0]
                 game_result = f'{killed_player.player_name} was killed.'
 
                 if killed_player.card == 'Werewolf':
                     game_result += ' The villagers win.'
-                    self.experiment_results.loc[len(self.experiment_results)] = {'player_count': self.player_count, 'discussion_depth': self.discussion_depth, 'use_gpt4': self.use_gpt4, 'use_claude_opus': self.use_claude_opus, 'render_markdown': self.render_markdown, 'w_flag': self.w_flag, 's_flag': self.s_flag, 'base_flag': self.base_flag, 'win': 0, 'loss': 1, 'tie': 0}
+                    self.experiment_results.loc[len(self.experiment_results)] = {'player_count': self.player_count, 'discussion_depth': self.discussion_depth, 'use_gpt4': self.use_gpt4, 'use_claude_opus': self.use_claude_opus, 'render_markdown': self.render_markdown, 'w_flag': self.w_flag, 's_flag': self.s_flag, 'base_flag': self.base_flag, 'win': 0, 'loss': 1}
                 else:
                     game_result += ' The werewolves win.'
-                    self.experiment_results.loc[len(self.experiment_results)] = {'player_count': self.player_count, 'discussion_depth': self.discussion_depth, 'use_gpt4': self.use_gpt4, 'use_claude_opus': self.use_claude_opus, 'render_markdown': self.render_markdown, 'w_flag': self.w_flag, 's_flag': self.s_flag, 'base_flag': self.base_flag, 'win': 1, 'loss': 0, 'tie': 0}
+                    self.experiment_results.loc[len(self.experiment_results)] = {'player_count': self.player_count, 'discussion_depth': self.discussion_depth, 'use_gpt4': self.use_gpt4, 'use_claude_opus': self.use_claude_opus, 'render_markdown': self.render_markdown, 'w_flag': self.w_flag, 's_flag': self.s_flag, 'base_flag': self.base_flag, 'win': 1, 'loss': 0}
 
         self.rendering_engine.render_game_statement(game_result)
 
@@ -566,12 +642,12 @@ class Game:
 @click.option('--use-claude-opus', is_flag=True, default=False, help='Use Claude-Opus for Anthropic_Player')
 @click.option('--render-markdown', is_flag=True, default=False, help='Render output as markdown')
 def play_game(player_count, discussion_depth, use_gpt4, use_claude_opus, render_markdown, w_flag, s_flag, base_flag):
-    experiment_results = pd.DataFrame(columns=['player_count', 'discussion_depth', 'use_gpt4', 'use_claude_opus', 'render_markdown', 'w_flag', 's_flag', 'base_flag', 'win','loss','tie'])
+    experiment_results = pd.DataFrame(columns=['player_count', 'discussion_depth', 'use_gpt4', 'use_claude_opus', 'render_markdown', 'w_flag', 's_flag', 'base_flag', 'win','loss'])
     #game = Game(player_count=player_count, discussion_depth=discussion_depth, use_gpt4=use_gpt4, render_markdown=render_markdown, w_flag=w_flag, s_flag=s_flag, base_flag=base_flag)
-    for i in range(1):
-        game = Game(player_count=5, discussion_depth=5, render_markdown=True, w_flag='OpenAI_Player', s_flag='OpenAI_Player', base_flag='OpenAI_Player', experiment_results=experiment_results,use_gpt4=True, use_claude_opus=True)
+    for i in range(50):
+        game = Game(player_count=5, discussion_depth=20, render_markdown=True, w_flag='OpenAI_Player', s_flag='Anthropic_Player', base_flag='Anthropic_Player', experiment_results=experiment_results,use_gpt4=True, use_claude_opus=False)
         game.play()
-    experiment_results.to_csv('1w_gpt4o.csv')
+    experiment_results.to_csv('1w_gpt_on_claude_sonn.csv')
 
 
     
