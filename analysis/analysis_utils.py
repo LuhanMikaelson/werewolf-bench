@@ -72,9 +72,11 @@ def main():
     path = sys.argv[1]
     game_id = path.split('/')[-1].replace('.json', '')
     data_save_path = sys.argv[2]
+    game_type = sys.argv[3]
     game_data = json.load(open(path, 'r'))
     write_data = {
         'game_id':[],
+        'game_type':[],
         'player_id':[],
         'player_name':[],
         'player_role':[],
@@ -91,6 +93,7 @@ def main():
 
     for idx, player in enumerate(game_data['players_and_roles']):
         write_data['game_id'].append(game_id)
+        write_data['game_type'].append(game_type)
         write_data['player_id'].append(idx)
         write_data['player_name'].append(player)
         write_data['player_role'].append(game_data['players_and_roles'][player])
