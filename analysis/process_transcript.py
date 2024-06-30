@@ -2,7 +2,6 @@ import sys
 import json
 
 def get_players_and_roles(transcript_list):
-    # Player number 1 is named Kraven, and they have the Mason card.
     players = {}
     day_start_idx = transcript_list.index('>***GAME:*** Everyone, Wake up!\n')
     for line in transcript_list[:day_start_idx]:
