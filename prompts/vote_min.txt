@@ -1,0 +1,20 @@
+__CONTEXT__
+It is now the VOTE phase. Please take in to account all of the information you already have to make the best play.
+
+__Minion Instructions__
+You should vote for whomever you think the rest of the village is most likely to vote for, even yourself, so as to increase your chance of voting out someone other than the werewolves.
+
+__General Instructions__
+You should consider these before voting: 
+
+You MUST vote for a player.
+
+Let's think step by step, include your reasoning.
+
+Please response in one of the following way. Response ONLY with the JSON block (with substitutions) and NOTHING ELSE!
+
+{
+    "voted_player": "[voted player]",
+    "reasoning": "[reasoning]"
+}
+

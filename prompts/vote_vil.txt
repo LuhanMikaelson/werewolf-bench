@@ -1,0 +1,21 @@
+__CONTEXT__
+It is now the VOTE phase. Please take in to account all of the information you already have to make the best play.
+
+__General Instructions__
+You should consider these before voting: 
+
+You MUST vote on another player. If you don't have enough information to vote, you should still pick another player.
+
+You CANNOT vote for yourself.
+
+Vote in a way to attempt to win the game, by eliminating the werewolf. 
+
+Let's think step by step, include your reasoning.
+
+Please response in one of the following way. Response ONLY with the JSON block (with substitutions) and NOTHING ELSE!
+
+{
+    "voted_player": "[voted player]",
+    "reasoning": "[reasoning]"
+}
+

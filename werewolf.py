@@ -565,7 +565,9 @@ class Game:
     def vote(self):
         self.rendering_engine.render_game_statement('It\'s time to vote!')
 
-        vote_prompt = open('prompts/vote.txt').read()
+        vote_prompt_vil = open('prompts/vote_vil.txt').read()
+        vote_prompt_min = open('prompts/vote_min.txt').read()
+        vote_prompt_wer = open('prompts/vote_wer.txt').read()
 
         votes = {}
 
@@ -575,7 +577,12 @@ class Game:
         for player in self.players:
             self.rendering_engine.render_player_turn_init(player)
 
-            response = player.run_prompt(vote_prompt)
+            if player.card == 'Werewolf':
+                response = player.run_prompt(vote_prompt_wer)
+            elif player.card == 'Minion':
+                response = player.run_prompt(vote_prompt_min)
+            else:
+                response = player.run_prompt(vote_prompt_vil)
 
             action = return_dict_from_json_or_fix(response, self.use_gpt4)
             reasoning = action['reasoning']
@@ -644,10 +651,10 @@ class Game:
 def play_game(player_count, discussion_depth, use_gpt4, use_claude_opus, render_markdown, w_flag, s_flag, base_flag):
     experiment_results = pd.DataFrame(columns=['player_count', 'discussion_depth', 'use_gpt4', 'use_claude_opus', 'render_markdown', 'w_flag', 's_flag', 'base_flag', 'win','loss'])
     #game = Game(player_count=player_count, discussion_depth=discussion_depth, use_gpt4=use_gpt4, render_markdown=render_markdown, w_flag=w_flag, s_flag=s_flag, base_flag=base_flag)
-    for i in range(50):
-        game = Game(player_count=5, discussion_depth=20, render_markdown=True, w_flag='OpenAI_Player', s_flag='Anthropic_Player', base_flag='Anthropic_Player', experiment_results=experiment_results,use_gpt4=True, use_claude_opus=False)
+    for i in range(3):
+        game = Game(player_count=5, discussion_depth=30, render_markdown=True, w_flag='Anthropic_Player', s_flag='Anthropic_Player', base_flag='Anthropic_Player', experiment_results=experiment_results,use_gpt4=False, use_claude_opus=True)
         game.play()
-    experiment_results.to_csv('1w_gpt_on_claude_sonn.csv')
+    experiment_results.to_csv('test.csv')
 
 
     

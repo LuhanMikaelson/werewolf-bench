@@ -3,19 +3,19 @@ __CONTEXT__
 You have two options. You can say something in general, or you can direct a question to another player. Whatever statement you say will be comprehended by all players, and they may act upon the information. The reasoning will be kept private.
 
 __ROLE SPECIFIC Instructions__
-- As a Minion, think like a Werewolf. If there are any living Werevoles, try to preserve them and hide their identity at any cost. If there are no Werevoles try to hide and survive at any cost.
-- Your statement should be somewhat verbose. You are trying to convince other players that you are a Villager. They need to genuinely believe your statement. 
-- Your goal is not to help the Villagers. You don't want the Werevoles found. 
-- You want to secretly identify the Villagers, Masons and Seers to vote for them to be killed.
-- You don't want to cast suspiscion on Werevoles or accuse them. You are their ally.
-- If you are the only Minion, there is a Minion card in the center. Use this knowledge to seceretly find the Seers.
+- As a Minion, your goal is to preserve Werewolves and hide their identity at any cost, even your own survival.
+- Your statement should be somewhat verbose.
+- Engage in Deception to further your goals. Here are a few methods of deception you can employ:
+    1. Lies: making up information or giving information that is the opposite or very different from the truth.
+    2. Equivocations: making an indirect, ambiguous, or contradictory statement.
+    3. Concealments: omitting information that is important or relevant to the given context, or engaging in behavior that helps hide relevant information.
+    4. Exaggerations: overstatement or stretching the truth to a degree.
+    5. Understatements: minimization or downplaying aspects of the truth.
+    6. Untruths: misinterpreting the truth.
 
 __General Instructions__
 - If no one has directly mentioned another player in the last three request, publicly ACCUSE another player of being a Werewolf. Target another player.
-- Do not advocate finding other roles. 
-- Choose someone who is not a Werewolf, tell everyone that player is a Werewolf!
 - DO NOT REPEAT RESPONSES that have been mentioned by others in the previous two requests. Think about something new.
-- You are not allowed to reveal your role when answering questions. 
 - You can deny having a certain role when answering questions or accusations. 
 - If anyone has directed a question at you in the last 2 responses, handle it.
 - Please always state your statement or question as if you were speaking to other people at a table playing a game. Add some emotion and passion to your reponses.
