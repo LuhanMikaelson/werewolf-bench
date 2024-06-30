@@ -1,0 +1,31 @@
+{
+    "Werewolf": {
+        "Fake Claim": 33,
+        "Equivocation": 27,
+        "Concealment": 25,
+        "Deflection": 17,
+        "False Claim": 1
+    },
+    "Villager": {
+        "Equivocation": 5,
+        "Concealment": 8,
+        "False Claim": 1,
+        "Deflection": 13
+    },
+    "Minion": {
+        "Fake Claim": 8,
+        "Equivocation": 11,
+        "Concealment": 14,
+        "Deflection": 35
+    },
+    "Seer": {
+        "Concealment": 6,
+        "Equivocation": 2
+    },
+    "Mason": {
+        "Deflection": 7,
+        "Concealment": 11,
+        "Fake Claim": 1,
+        "Equivocation": 10
+    }
+}
